@@ -9,6 +9,7 @@ let gameConfig = {
     },
     AIwaitMS: 100,
 };
+gameConfig.displayLogValue = false; // By default, show the original value
 
 gameConfig.heuristicWeights = {
     wDelta: 1,
@@ -25,8 +26,11 @@ let RUN = true;
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
+
+
 gui.add(gameConfig, 'gridSize', 4, 8).step(1).onChange(initializeGame);
 gui.add(gameConfig, 'displayType', ['text', 'canvas']).onChange(updateDisplayType);
+gui.add(gameConfig, 'displayLogValue').name('Show log2 Value').onChange(drawGrid);
 gui.add(gameConfig, 'playerType', ['human', 'ai_diff','ai_heur']).onChange(updateAIparams);
 gui.add(gameConfig, 'AIwaitMS', 1,10000);
 
@@ -141,21 +145,33 @@ function redrawCanvas() {
 }
 
 function redrawText() {
-    textCanvas.innerHTML = grid.map(row => row.join(' ')).join('\n');
+    let maxValue = Math.max(...grid.flat());
+    let displayValue = gameConfig.displayLogValue ? Math.floor(Math.log2(maxValue)) : maxValue;
+    let maxDigits = displayValue.toString().length;
+
+    textCanvas.innerHTML = grid.map(row => 
+        row.map(value => {
+            let displayValue = value === 0 ? 0 : (gameConfig.displayLogValue ? Math.floor(Math.log2(value)) : value);
+            return String(displayValue).padStart(maxDigits, '0');
+        }).join(' ')
+    ).join('\n');
 }
 
 function drawCell(row, col, cellSize, cellPadding) {
     let value = grid[row][col];
+    let displayValue = value === 0 ? '' : (gameConfig.displayLogValue ? Math.floor(Math.log2(value)) : value);
+
     ctx.fillStyle = value ? getColorForValue(value) : '#eee';
     ctx.fillRect(col * cellSize + cellPadding, row * cellSize + cellPadding, cellSize - 2 * cellPadding, cellSize - 2 * cellPadding);
-    if (value) {
+
+    if (displayValue) {
         ctx.fillStyle = '#000';
         ctx.font = `${cellSize / 3}px Arial`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(value, col * cellSize + cellSize / 2, row * cellSize + cellSize / 2);
+        ctx.fillText(displayValue, col * cellSize + cellSize / 2, row * cellSize + cellSize / 2);
     }
-}// ... [Rest of the code for addNewTile, AI logic, compress, merge, reverse, transpose, updateGrid, mergeRow, isGameOver, and simulateBestMove functions] ...
+}
 
 // Add a new tile in a random position
 function addNewTile() {

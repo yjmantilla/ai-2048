@@ -5,8 +5,20 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.9/dat.gui.min.js"></script>
 </head>
 <body>
-    <canvas id="gameCanvas" width="400" height="400" style="display: none;"></canvas>
+    <canvas id="gameCanvas" style="display: none;"></canvas>
     <pre id="textCanvas" style="font-family: monospace;"></pre>
     <script src="game.js"></script>
+    <script>
+        function resizeCanvas() {
+            var canvas = document.getElementById('gameCanvas');
+            var size = Math.min(window.innerWidth, window.innerHeight) * 0.8; // 80% of the smallest dimension
+            canvas.width = size;
+            canvas.height = size;
+        }
+
+        // Resize the canvas when the document loads and when the window is resized
+        window.onload = resizeCanvas;
+        window.onresize = resizeCanvas;
+    </script>
 </body>
 </html>
